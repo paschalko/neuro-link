@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Registered Events</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.js"></script>
+</head>
+<body>
+    
+    <div id="me">
+        <span id="title">Neurolink</span>
+        <div class="search-container">
+          <input type="text" class="search-input" placeholder="Search events">
+        </div>
+        <div id="headtxt">
+          <span>Contact</span>
+          <span>Create Events</span>
+          <span>Help Center</span>
+        </div>
+        <a href="user.html">
+          <img src="img/How-To-Be-A-Happy-Woman.png" id="profile" />
+        </a>
+      </div>
+
+    <div class="bottom-navbar">
+        <div class="nav-item"><img src="img/Home.png" alt="Home" class = "pin"><span>Home</span></div>
+        <a href = "registered.html"><div class="nav-item"><img src="img/Event Accepted.png" alt="Events" class = "pin"><span>Events</span></div> </a>
+        <a href="chat.html"><div class="nav-item"><img src="img/Handshake Heart.png" alt="Friends"class = "pin"><span>Friends</span></div></a>
+        <div class="nav-item"><img src="img/Bookmark.png" alt="Saved" class = "pin"><span>Saved</span></div>
+        <div class="nav-item"><img src="img/Jasper Ai.png" alt="AI" class = "pin"><span>AI</span></div>
+      </div>
+    
+  <h1 style="text-align: center; margin-top: 40px;">🎉 Your Registered Events</h1>
+
+  <div id="app">
+    <div v-if="events.length === 0" style="text-align: center;">No events registered yet.</div>
+    <div v-for="event in events" :key="event._id" id="container">
+      <img :src="event.img" class="cart-img" />
+      <div id="carttxt">
+        <center><span id="event-name">{{ event.name }}</span></center><br>
+        <span id="det">
+          <div id="clo"><img src="img/Time Machine.png" class="clocs"> {{ event.time }}</div><br>
+          <div id="loc"><img src="img/Location.png" class="clocs"> {{ event.location }}</div><br>
+        </span>
+        <button
+        :class="['register-btn', 'registered']"
+        @click="confirmUnregister(event._id)"
+      >
+        Registered
+      </button>
+      
+      
+      </div>
+    </div>
+  </div>
+
+  <script>
+ Vue.createApp({
+  data() {
+    return {
+      events: []
+    };
+  },
+  mounted() {
+    const registered = JSON.parse(localStorage.getItem("registeredEvents")) || [];
+    this.events = registered;
+  },
+  methods: {
+    confirmUnregister(id) {
+      if (confirm("Are you sure you want to unregister from this event?")) {
+        // Remove from localStorage
+        this.events = this.events.filter(event => event._id !== id);
+        localStorage.setItem("registeredEvents", JSON.stringify(this.events));
+        alert("❌ You have been unregistered.");
+      }
+    }
+  }
+}).mount("#app");
+
+  </script>
+</body>
+</html>

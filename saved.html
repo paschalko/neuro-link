@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved Events</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.js"></script>
+</head>
+<body style="background-color: #f4f4ff; font-family: 'Poppins', sans-serif; padding: 20px;">
+
+  <h1>📌 Saved Events</h1>
+
+  <div id="savedApp">
+    <div v-if="savedItems.length === 0">No saved events yet.</div>
+    <div v-for="item in savedItems" :key="item._id" id="container" style="margin-bottom: 20px;">
+      <div class="image-wrapper">
+        <img :src="item.img" alt="Event" class="cart-img" />
+        <img
+          src="img/greenBookmark.png"
+          alt="Saved"
+          class="bookmark-icon"
+          @click="toggleSave(item)"
+          style="cursor: pointer;"
+        >
+      </div>
+      <div id="carttxt">
+        <center><span id="event-name">{{ item.name }}</span></center><br>
+        <span id="det">
+          <div id="clo"><img src="img/Time Machine.png" class="clocs"> {{ item.time }}</div><br>
+          <div id="loc"><img src="img/Location.png" class="clocs"> {{ item.location }}</div><br>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    Vue.createApp({
+      data() {
+        return {
+          savedItems: []
+        };
+      },
+      mounted() {
+        this.savedItems = JSON.parse(localStorage.getItem("savedEvents")) || [];
+      },
+      methods: {
+        toggleSave(item) {
+          this.savedItems = this.savedItems.filter(e => e._id !== item._id);
+          localStorage.setItem("savedEvents", JSON.stringify(this.savedItems));
+        }
+      }
+    }).mount("#savedApp");
+  </script>
+</body>
+</html>

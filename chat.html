@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Neurolink Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    .request-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: red;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 50%;
+  display: none;
+  z-index: 1000;
+}
+
+    .request-popup {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  z-index: 999;
+  width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.request-popup.active {
+  display: block;
+}
+
+.request-popup strong {
+  display: block;
+  font-size: 14px;
+  margin: 10px 0 5px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.request-popup ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px;
+}
+
+.request-popup li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f7f7ff;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.request-action-btn {
+  margin-left: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background 0.2s ease;
+}
+
+.request-action-btn:hover {
+  background: #2563eb;
+}
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f4f4ff;
+    }
+    #main {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #chat-app {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 250px;
+      background: #fff;
+      border-right: 1px solid #ddd;
+      padding: 20px;
+      overflow-y: auto;
+      position: relative;
+    }
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #searchInput {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #requestIcon {
+      cursor: pointer;
+      width: 25px;
+    }
+    .request-popup {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      z-index: 999;
+      width: 100%;
+    }
+    .request-popup.active {
+      display: block;
+    }
+    .user-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+    .user-entry img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    .chat-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      overflow: hidden;
+    }
+    .chat-header {
+      font-weight: 600;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      background: #fafafa;
+      margin-bottom: 15px;
+    }
+    .message {
+      margin-bottom: 10px;
+    }
+    .message.you {
+      text-align: right;
+      color: #3b82f6;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .input-area button {
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .bottom-navbar {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+      background: #fff;
+      border-top: 1px solid #ddd;
+    }
+    .bottom-navbar .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: black;
+      font-size: 13px;
+    }
+    .bottom-navbar .nav-item img {
+      width: 25px;
+      height: 25px;
+      margin-bottom: 4px;
+    }
+    .request-action-btn {
+      margin-left: 5px;
+      padding: 3px 6px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="main">
+    <div id="chat-app">
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <input type="text" id="searchInput" placeholder="Search usernames...">
+          <div id="requestWrapper" style="position: relative;">
+            <img id="requestIcon" src="img/6469169.png" alt="Requests">
+            <span id="requestCount" class="request-badge">0</span>
+          </div>
+        </div>
+        
+        <div class="request-popup" id="requestPopup">
+          <strong>Requests Received</strong>
+          <ul id="receivedRequests"></ul>
+          <hr>
+          <strong>Requests Sent</strong>
+          <ul id="sentRequests"></ul>
+        </div>
+        <div id="userList"></div>
+      </div>
+
+      <div class="chat-box">
+        <div class="chat-header" id="chatHeader">Select a friend to chat</div>
+        <div id="messages"></div>
+        <div class="input-area">
+          <input type="text" id="msgInput" placeholder="Type your message...">
+          <button id="sendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-navbar">
+      <a href="index.html" class="nav-item">
+        <img src="img/Home.png" alt="Home">
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item">
+        <img src="img/Event Accepted.png" alt="Events">
+        <span>Events</span>
+      </a>
+      <a href="chat.html" class="nav-item">
+        <img src="img/Handshake Heart.png" alt="Friends">
+        <span>Friends</span>
+      </a>
+      <a href="#" class="nav-item">
+        <img src="img/Bookmark.png" alt="Saved">
+        <span>Saved</span>
+      </a>
+      <a href="#" class="nav-item">
+        <img src="img/Jasper Ai.png" alt="AI">
+        <span>AI</span>
+      </a>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyANnWItQ8ogipTRlNqSMCyMI_nOywuJW5M",
+      authDomain: "neurolink-bf380.firebaseapp.com",
+      projectId: "neurolink-bf380",
+      storageBucket: "neurolink-bf380.appspot.com",
+      messagingSenderId: "416077966497",
+      appId: "1:416077966497:web:9309c204356de7cbb454e0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let currentUser = null;
+
+    auth.onAuthStateChanged(async user => {
+      if (!user) return window.location.href = "signup.html";
+      currentUser = user;
+      loadSentRequests();
+      loadReceivedRequests();
+      loadFriendList();
+    });
+
+    document.getElementById("requestIcon").addEventListener("click", () => {
+      document.getElementById("requestPopup").classList.toggle("active");
+    });
+
+    document.getElementById("searchInput").addEventListener("input", async function () {
+      const searchValue = this.value.toLowerCase();
+      const userList = document.getElementById("userList");
+      userList.innerHTML = "";
+
+      if (!searchValue.trim()) return;
+
+      const snapshot = await db.collection("quizResponses").get();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const username = data.email?.split("@")[0];
+        if (username && username.toLowerCase().includes(searchValue)) {
+          const div = document.createElement("div");
+          div.className = "user-entry";
+          div.innerHTML = `<img src="${data.profilePic || 'img/user-profile-icon-in-flat-style-member-avatar-illustration-on-isolated-background-human-permission-sign-business-concept-vector.jpg'}"><span>${username}</span>`;
+          div.addEventListener("click", () => sendFriendRequest(data.email));
+          userList.appendChild(div);
+        }
+      });
+    });
+
+    async function sendFriendRequest(email) {
+      if (!currentUser) return;
+      await db.collection("friendRequests").add({
+        from: currentUser.email,
+        to: email,
+        timestamp: new Date()
+      });
+      alert(`Request sent to ${email}`);
+      loadSentRequests();
+    }
+
+    async function loadSentRequests() {
+      const snapshot = await db.collection("friendRequests").where("from", "==", currentUser.email).get();
+      const ul = document.getElementById("sentRequests");
+      ul.innerHTML = "";
+      snapshot.forEach(doc => {
+        const li = document.createElement("li");
+        li.textContent = doc.data().to;
+        ul.appendChild(li);
+      });
+    }
+
+    async function loadReceivedRequests() {
+  const snapshot = await db.collection("friendRequests")
+    .where("to", "==", currentUser.email).get();
+
+  const ul = document.getElementById("receivedRequests");
+  const requestCountEl = document.getElementById("requestCount");
+  ul.innerHTML = "";
+
+  let count = 0;
+
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    count++;
+
+    const li = document.createElement("li");
+    li.textContent = data.from;
+
+    const acceptBtn = document.createElement("button");
+    acceptBtn.textContent = "Accept";
+    acceptBtn.className = "request-action-btn";
+    acceptBtn.onclick = () => acceptRequest(doc.id, data);
+
+    const declineBtn = document.createElement("button");
+    declineBtn.textContent = "Decline";
+    declineBtn.className = "request-action-btn";
+    declineBtn.onclick = () => declineRequest(doc.id);
+
+    li.appendChild(acceptBtn);
+    li.appendChild(declineBtn);
+    ul.appendChild(li);
+  });
+
+  // Show or hide badge
+  if (count > 0) {
+    requestCountEl.style.display = "inline-block";
+    requestCountEl.textContent = count;
+  } else {
+    requestCountEl.style.display = "none";
+  }
+}
+
+
+    async function acceptRequest(id, data) {
+      const friendEmail = data.from;
+      const currentUserRef = db.collection("users").doc(currentUser.email);
+      const friendRef = db.collection("users").doc(friendEmail);
+
+      await currentUserRef.set({
+        friends: firebase.firestore.FieldValue.arrayUnion(friendEmail)
+      }, { merge: true });
+
+      await friendRef.set({
+        friends: firebase.firestore.FieldValue.arrayUnion(currentUser.email)
+      }, { merge: true });
+
+      await db.collection("friendRequests").doc(id).delete();
+      alert(`You are now friends with ${friendEmail}`);
+      loadReceivedRequests();
+      loadFriendList();
+    }
+
+    async function declineRequest(id) {
+      await db.collection("friendRequests").doc(id).delete();
+      loadReceivedRequests();
+    }
+
+    async function loadFriendList() {
+      const userDoc = await db.collection("users").doc(currentUser.email).get();
+      const friends = userDoc.data()?.friends || [];
+      const userList = document.getElementById("userList");
+      userList.innerHTML = "";
+
+      friends.forEach(friendEmail => {
+        const div = document.createElement("div");
+        div.className = "user-entry";
+        div.innerHTML = `<img src="img/user-profile-icon-in-flat-style-member-avatar-illustration-on-isolated-background-human-permission-sign-business-concept-vector.jpg"><span>${friendEmail.split("@")[0]}</span>`;
+        div.addEventListener("click", () => loadChat(friendEmail));
+        userList.appendChild(div);
+      });
+    }
+
+    function listenForMessages(friendEmail) {
+      const chatId = [currentUser.email, friendEmail].sort().join("_");
+      const messagesRef = db.collection("chats").doc(chatId).collection("messages").orderBy("timestamp");
+
+      messagesRef.onSnapshot(snapshot => {
+        const messagesDiv = document.getElementById("messages");
+        messagesDiv.innerHTML = "";
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          const div = document.createElement("div");
+          div.className = "message " + (msg.sender === currentUser.email ? "you" : "them");
+          div.textContent = msg.text;
+          messagesDiv.appendChild(div);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+
+      document.getElementById("sendBtn").onclick = async () => {
+        const text = document.getElementById("msgInput").value;
+        if (!text.trim()) return;
+
+        await db.collection("chats").doc(chatId).collection("messages").add({
+          sender: currentUser.email,
+          receiver: friendEmail,
+          text,
+          timestamp: new Date()
+        });
+
+        document.getElementById("msgInput").value = "";
+      };
+    }
+
+    async function loadChat(friendEmail) {
+      const userDoc = await db.collection("users").doc(currentUser.email).get();
+      const friendList = userDoc.data()?.friends || [];
+
+      if (!friendList.includes(friendEmail)) {
+        alert("You're not friends yet.");
+        return;
+      }
+
+      document.getElementById("chatHeader").innerText = friendEmail;
+      listenForMessages(friendEmail);
+    }
+    window.addEventListener("load", async () => {
+  const groupChatId = localStorage.getItem("groupChatId");
+  if (groupChatId) {
+    loadGroupChat(groupChatId);
+  }
+});
+
+function loadGroupChat(chatId) {
+  const messagesRef = db.collection("groupChats").doc(chatId).collection("messages").orderBy("timestamp");
+
+  document.getElementById("chatHeader").innerText = "Group Chat";
+  messagesRef.onSnapshot(snapshot => {
+    const messagesDiv = document.getElementById("messages");
+    messagesDiv.innerHTML = "";
+    snapshot.forEach(doc => {
+      const msg = doc.data();
+      const div = document.createElement("div");
+      div.className = "message " + (msg.sender === currentUser.email ? "you" : "them");
+      div.textContent = msg.sender.split("@")[0] + ": " + msg.text;
+      messagesDiv.appendChild(div);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+
+  document.getElementById("sendBtn").onclick = async () => {
+    const text = document.getElementById("msgInput").value;
+    if (!text.trim()) return;
+
+    await db.collection("groupChats").doc(chatId).collection("messages").add({
+      sender: currentUser.email,
+      text,
+      timestamp: new Date()
+    });
+
+    document.getElementById("msgInput").value = "";
+  };
+}
+
+  </script>
+</body>
+</html>

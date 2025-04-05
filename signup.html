@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login / Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f4f4ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .auth-container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background-color: #93C572;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #7dad56;
+    }
+
+    .or {
+      margin: 15px 0;
+      font-size: 13px;
+      color: #888;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-container">
+  <!-- Login Form -->
+  <div id="loginForm">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <div class="or">Don't have an account?</div>
+    <button onclick="showSignup()">Go to Sign Up</button>
+  </div>
+
+  <!-- Signup Form -->
+  <div id="signupForm" class="hidden">
+    <h2>Sign Up</h2>
+    <input type="text" id="firstName" placeholder="First Name" />
+    <input type="text" id="lastName" placeholder="Last Name" />
+    <input type="date" id="dob" placeholder="Date of Birth" />
+    <input type="text" id="username" placeholder="Username" />
+    <input type="email" id="email" placeholder="Gmail" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="signup()">Sign Up</button>
+    <div class="or">Already have an account?</div>
+    <button onclick="showLogin()">Go to Login</button>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyANnWItQ8ogipTRlNqSMCyMI_nOywuJW5M",
+    authDomain: "neurolink-bf380.firebaseapp.com",
+    projectId: "neurolink-bf380",
+    storageBucket: "neurolink-bf380.firebasestorage.app",
+    messagingSenderId: "416077966497",
+    appId: "1:416077966497:web:9309c204356de7cbb454e0",
+    measurementId: "G-LK4ZZKZ6TW"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  function showSignup() {
+    document.getElementById("loginForm").classList.add("hidden");
+    document.getElementById("signupForm").classList.remove("hidden");
+  }
+
+  function showLogin() {
+    document.getElementById("signupForm").classList.add("hidden");
+    document.getElementById("loginForm").classList.remove("hidden");
+  }
+
+  function login() {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(user => {
+        alert("✅ Logged in!");
+        window.location.href = "index.html";
+      })
+      .catch(err => alert("Login error: " + err.message));
+  }
+
+  async function signup() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    const dob = document.getElementById("dob").value;
+    const username = document.getElementById("username").value;
+
+    if (!firstName || !lastName || !dob || !username || !email || !password) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    const usernameSnapshot = await db.collection("users").where("username", "==", username).get();
+    if (!usernameSnapshot.empty) {
+      alert("❌ Username already exists. Please choose another.");
+      return;
+    }
+
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(async userCredential => {
+        const user = userCredential.user;
+
+        await db.collection("users").doc(user.uid).set({
+          email,
+          firstName,
+          lastName,
+          dob,
+          username
+        });
+
+        alert("🎉 Account created! Redirecting to your profile...");
+        window.location.href = "user.html";
+      })
+      .catch(err => {
+        if (err.code === "auth/email-already-in-use") {
+          alert("❌ This email is already in use. Please log in instead.");
+        } else {
+          alert("Signup error: " + err.message);
+        }
+      });
+  }
+</script>
+</body>
+</html>
