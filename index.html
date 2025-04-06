@@ -133,12 +133,12 @@ const firebaseConfig = {
             <img src="img/pngtree-vector-cross-icon-png-image_925896.jpg" class="close-btn" @click="closeModal" alt="Close">
             <span id="whi">Which environment is more suitable for you?</span><br><br>
     
-            <div v-if="selectedOption !== 'Online Communication'" class="option" @click="selectOption('One')">Online Communication</div>
+            <div v-if="selectedOption !== 'Online Communication'" class="option" @click="selectOption('Online Communication')">One on one </div>
             <div v-if="selectedOption === 'Online Communication'" class="sub-options">
               <div class="option" @click="startQuiz">Compatible Test</div>
               <div class="option" @click="selectSubOption('Random')">Random</div>
             </div>
-            <div v-if="selectedOption !== 'Online Communication'" class="option" @click="selectOption('One-on-One')">One-on-One</div>
+            <div v-if="selectedOption !== 'Online Communication'" class="option" @click="selectOption('One-on-One')">Online</div>
             <div v-if="selectedOption !== 'Online Communication'" class="option" @click="selectOption('Group Reading')">Group Reading</div>
             <div v-if="selectedOption !== 'Online Communication'" class="option" @click="selectOption('None')">None</div>
           </div>
